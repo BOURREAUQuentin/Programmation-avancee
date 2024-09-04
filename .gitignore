@@ -1,3 +1,5 @@
 venv
 GestionProduits/db.sqlite3
 GestionProduits/GestionProduits/__pycache__
+GestionProduits/LesProduits/migrations/__pycache__
+GestionProduits/LesProduits/__pycache__
