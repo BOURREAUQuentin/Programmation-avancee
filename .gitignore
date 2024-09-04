@@ -1,0 +1,3 @@
+venv
+GestionProduits/db.sqlite3
+GestionProduits/GestionProduits/__pycache__
