@@ -2,5 +2,5 @@ from django.shortcuts import render
 
 from django.http import HttpResponse
 
-def home(request):
-    return HttpResponse("Bonjour test")
+def home(request, name = ""):
+    return HttpResponse("Bonjour depuis Django : " + name)
