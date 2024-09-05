@@ -1,12 +1,16 @@
 from django.db import models
 
-class Task(models.Model):
+class Product(models.Model):
     name = models.CharField(max_length=250)
-    description = models.TextField()
-    creation_date = models.DateTimeField(auto_now_add=True)
-    due_date = models.DateTimeField(auto_now=True)
-    schedule_date = models.DateTimeField(auto_now=True)
-    closed = models.BooleanField(default=False)
+    code = models.IntegerField()
     
-    def __str__(self):
-        return self.name + ": " + self.description
+    def __unicode__(self):
+        return "{0} [{1}]".format(self.name, self.code)
+
+    
+class ProductItem(models.Model):
+    color = models.CharField(max_length=100)
+    product = models.ForeignKey("Product", on_delete=models.CASCADE)
+
+    def __unicode__(self):
+        return "{0} {{1}} [{2}]".format(self.product.name, self.color, self.product.code)
