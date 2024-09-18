@@ -12,6 +12,7 @@ set_product_offline.short_description = "Mettre hors ligne"
 class ProductItemAdmin(admin.TabularInline):
     model = ProductItem
     filter_vertical = ("attributes",)
+    raw_id_fields = ["attributes"]
 
 class ProductFilter(admin.SimpleListFilter):
     title = 'filtre produit'
