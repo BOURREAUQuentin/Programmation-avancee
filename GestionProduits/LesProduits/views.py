@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from LesProduits.models import Product
+from LesProduits.models import Product, ProductItem
 
 # def home(request):
 #     return HttpResponse("Bienvenue sur l'accueil")
@@ -20,14 +20,21 @@ def home(request):
     return HttpResponse("<h1>Hello Django!</h1>")
 
 def about(request):
-    return HttpResponse("<h1>About us...</h1>")
+    return render(request, 'LesProduits/about.html')
 
 def contact(request):
-    return HttpResponse("<h1>Contact us!</h1>")
+    return render(request, 'LesProduits/contact.html')
 
 def accueil(request,param):
     return HttpResponse("<h1>Hello " + param + " ! You're connected</h1>")
 
-def listProduits(request):
+def listeProduits(request):
     prdcts = Product.objects.all()
     return render(request, 'LesProduits/list_products.html', {'prdcts': prdcts})
+
+def listeDeclinaisons(request):
+    declinaisons = ProductItem.objects.all()
+    return render(request, 'LesProduits/list_items.html', {'liste_declinaisons': declinaisons})
+
+
+# faire vue pour id d'un produit et si ca existe pas on renvoi erreur 404

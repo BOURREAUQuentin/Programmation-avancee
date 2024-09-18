@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <title>Mon app DJANGO</title>
+    </head>
+    <body>
+        <h1>Hello mes déclinaisons de produits !</h1>
+        <p>Mes déclinaisons de produits sont :</p>
+        <ul>
+        {% for declinaison in liste_declinaisons %}
+            <li> {{ declinaison.name }} </li>
+        {% endfor %}
+        </ul>
+    </body>
+</html>
