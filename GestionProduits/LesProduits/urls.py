@@ -8,4 +8,5 @@ urlpatterns = [
     path("home/<param>",views.accueil ,name='accueil'),
     path("productview", views.listeProduits, name="lesProduits"),
     path("itemview", views.listeDeclinaisons, name="lesDeclinaisons"),
+    path("productview/<id_produit>", views.detailProduit, name="detailProduit"),
 ]

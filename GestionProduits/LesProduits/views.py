@@ -36,5 +36,10 @@ def listeDeclinaisons(request):
     declinaisons = ProductItem.objects.all()
     return render(request, 'LesProduits/list_items.html', {'liste_declinaisons': declinaisons})
 
+def detailProduit(request,id_produit):
+    # gérer cas d'erreur
+    produitRecherche = Product.objects.all().filter(code=id_produit)
+    print(produitRecherche)
+    return render(request, 'LesProduits/detail_product.html', {'produit': produitRecherche})
 
 # faire vue pour id d'un produit et si ca existe pas on renvoi erreur 404
