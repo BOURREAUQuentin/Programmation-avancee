@@ -1,27 +1,82 @@
+
 from django.db import models
 from django.utils import timezone
 
-class Product(models.Model):
-    name = models.CharField(max_length=250)
-    code = models.CharField(max_length=10, null=True, unique=True)
-    price_ht = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    fabrication_date = models.DateTimeField(blank=True, default=timezone.now)
-    status = models.ForeignKey("Status", on_delete=models.CASCADE, default=0)
-    
-    def __str__(self):
-        return "Le produit {0} (code = {1}) au prix de {2}€ depuis le {3}. Il a un statut {4}.".format(self.name, self.code, self.price_ht, self.fabrication_date, self.status.libelle)
+PRODUCT_STATUS = (
+    (0, 'Offline'),
+    (1, 'Online'),
+    (2, 'Out of stock')              
+)
 
-class ProductItem(models.Model):
-    code_item = models.CharField(max_length=10, null=True, unique=True)
-    color = models.CharField(max_length=100)
-    product = models.ForeignKey("Product", on_delete=models.CASCADE)
-
-    def __str__(self):
-        return "L'élément de code {0} appartient au produit ({1}){2} de couleur {3}.".format(self.code_item, self.product.code, self.product.name, self.color)
-    
+"""
+    Status : numero, libelle
+"""
 class Status(models.Model):
-    numero = models.IntegerField(null=True, unique=True)
+    numero  = models.IntegerField()
     libelle = models.CharField(max_length=100)
-
+          
     def __str__(self):
-        return "Le statut {0} de numéro {1}.".format(self.libelle, self.numero)
+        return "{0} {1}".format(self.numero, self.libelle)
+    
+"""
+Produit : nom, code, etc.
+"""
+class Product(models.Model):
+
+    class Meta:
+        verbose_name = "Produit"
+
+    name          = models.CharField(max_length=100)
+    code          = models.CharField(max_length=10, null=True, blank=True, unique=True)
+    price_ht      = models.DecimalField(max_digits=8, decimal_places=2,  null=True, blank=True, verbose_name="Prix unitaire HT")
+    price_ttc     = models.DecimalField(max_digits=8, decimal_places=2,  null=True, blank=True, verbose_name="Prix unitaire TTC")
+    status        = models.SmallIntegerField(choices=PRODUCT_STATUS, default=0)
+    date_creation =  models.DateTimeField(blank=True, verbose_name="Date crÃ©ation") 
+    
+    def __str__(self):
+        return "{0} {1}".format(self.name, self.code)
+
+"""
+    DÃ©clinaison de produit dÃ©terminÃ©e par des attributs comme la couleur, etc.
+"""
+class ProductItem(models.Model):
+    
+    class Meta:
+        verbose_name = "DÃ©clinaison Produit"
+
+    color   = models.CharField(max_length=100)
+    code    = models.CharField(max_length=10, null=True, blank=True, unique=True)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    attributes  = models.ManyToManyField("ProductAttributeValue", related_name="product_item", null=True, blank=True)
+       
+    def __str__(self):
+        return "{0} {1}".format(self.color, self.code)
+    
+class ProductAttribute(models.Model):
+    """
+    Attributs produit
+    """
+    
+    class Meta:
+        verbose_name = "Attribut"
+        
+    name =  models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.name
+    
+class ProductAttributeValue(models.Model):
+    """
+    Valeurs des attributs
+    """
+    
+    class Meta:
+        verbose_name = "Valeur attribut"
+        ordering = ['position']
+        
+    value              = models.CharField(max_length=100)
+    product_attribute  = models.ForeignKey('ProductAttribute', verbose_name="UnitÃ©", on_delete=models.CASCADE)
+    position           = models.PositiveSmallIntegerField("Position", null=True, blank=True)
+     
+    def __str__(self):
+        return "{0} [{1}]".format(self.value, self.product_attribute)
