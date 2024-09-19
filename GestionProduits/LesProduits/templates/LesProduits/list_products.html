@@ -1,21 +1,40 @@
 {% extends 'LesProduits/base.html' %}
+{% block title %}
+    Mon application DJANGO
+{% endblock %}
+{% block menu %}
+    <h1>Liste des produits</h1>
+{% endblock %}
 {% block contenu %}
-    <h1>Hello mes produits !</h1>
+    <table class="table">
+    <thead>
+        <th>Nom</th>
+        <th>Code</th>
+        <th>Prix HT</th>
+        <th>Prix TTC</th>
+        <th>Date Création</th>
+    </thead>
+    <tbody>
+        {% for prdct in prdcts %}
+            <tr>
+            <td>{{ prdct.name }} </td>
+            <td>{{ prdct.code }} </td>
+            <td>{{ prdct.price_ht }} </td>
+            <td>{{ prdct.price_ttc }} </td>
+            <td>{{ prdct.date_creation }} </td>
+            </tr>-
+        {% endfor %}
+    </tbody>
+    </table>
     <p>
-        J'ai 
+        J'ai
         {% if prdcts|length < 5 %}
-            peu de
-            {% elif prdcts|length < 10 %}
-            quelques
+        peu de
+        {% elif prdcts|length < 10 %}
+        quelques
         {% else %}
-            beaucoup de
+        beaucoup de
         {% endif %}
         produits préférés.
     </p>
-    <p>Mes produits sont :</p>
-    <ul>
-        {% for product in prdcts %}
-            <li> {{ product.name }} </li>
-        {% endfor %}
-    </ul>
 {% endblock %}
