@@ -16,7 +16,7 @@ from LesProduits.models import Product, ProductItem
 #     reponse += "</ul>"
 #     return HttpResponse(reponse)
 
-def home(request):
+def home():
     return HttpResponse("<h1>Hello Django!</h1>")
 
 def about(request):
