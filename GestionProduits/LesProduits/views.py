@@ -43,3 +43,34 @@ def detailProduit(request,id_produit):
     return render(request, 'LesProduits/detail_product.html', {'produit': produitRecherche})
 
 # faire vue pour id d'un produit et si ca existe pas on renvoi erreur 404
+
+
+from django.views.generic import *
+
+class HomeView(TemplateView):
+    template_name = "LesProduits/home3.html"
+    def post(self, request, **kwargs):
+        return render(request, self.template_name)
+
+class AboutView(TemplateView):
+    template_name = "LesProduits/about.html"
+    def get_context_data(self, **kwargs):
+        context = super(AboutView, self).get_context_data(**kwargs)
+        context['titreh1'] = "About us..."
+        return context
+    def post(self, request, **kwargs):
+        return render(request, self.template_name)
+
+class ProductListView(ListView):
+    model = Product
+    template_name = "LesProduits/list_products2.html"
+    context_object_name = "products"
+
+    def get_context_data(self, **kwargs):
+        context = super(ProductListView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Liste des produits"
+        context['prdcts'] = Product.objects.all()
+        return context
+
+    def get_queryset(self ) :
+        return Product.objects.order_by("price_ttc")
