@@ -1,9 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from LesProduits.models import Product, ProductItem
+
 from django.contrib.auth import *
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
+
+from LesProduits.forms import ContactUsForm
+from django.core.mail import send_mail
+from django.shortcuts import redirect
 
 # def home(request):
 #     return HttpResponse("Bienvenue sur l'accueil")
@@ -87,6 +92,29 @@ class ProductDetailView(DetailView):
         context['titremenu'] = "Détail produit"
         context['product'] = Product.objects.all().filter(code=1234)
         return context
+
+##################### Contact us (formulaire) #####################
+
+def ContactView(request):
+    if request.method=='POST':
+        form = ContactUsForm(request.POST)
+        form = ContactUsForm(request.POST)
+        if form.is_valid():
+            send_mail(
+            subject= "Message from " + form.cleaned_data["name"] or "anonyme" + "via MonProjet Contact Us form",
+            message=form.cleaned_data['message'],
+            from_email=form.cleaned_data['email'],
+            recipient_list=['marin.tremine@gmail.com'],
+            )
+            return redirect('email_sent')
+    else:
+        form = ContactUsForm()
+    titreh1 = "Contact us !"
+    print('La méthode de requête est : ', request.method)
+    print('Les données POST sont : ', request.POST)
+    return render(request, "LesProduits/contact.html",{'titreh1':titreh1, 'form':form})
+
+##################### Connexion / Inscription #####################
 
 class ConnectView(LoginView):
     template_name = 'LesProduits/login.html'
