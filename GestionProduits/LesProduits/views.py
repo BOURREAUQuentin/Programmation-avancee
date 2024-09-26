@@ -1,6 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from LesProduits.models import Product, ProductItem
+from django.contrib.auth import *
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.models import User
 
 # def home(request):
 #     return HttpResponse("Bienvenue sur l'accueil")
@@ -16,8 +19,8 @@ from LesProduits.models import Product, ProductItem
 #     reponse += "</ul>"
 #     return HttpResponse(reponse)
 
-def home():
-    return HttpResponse("<h1>Hello Django!</h1>")
+def home(request):
+    return render(request, 'LesProduits/home.html')
 
 def about(request):
     return render(request, 'LesProduits/about.html')
@@ -74,3 +77,44 @@ class ProductListView(ListView):
 
     def get_queryset(self ) :
         return Product.objects.order_by("price_ttc")
+
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = "LesProduits/detail_product2.html"
+    context_object_name = "product"
+    def get_context_data(self, **kwargs):
+        context = super(ProductDetailView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Détail produit"
+        context['product'] = Product.objects.all().filter(code=1234)
+        return context
+
+class ConnectView(LoginView):
+    template_name = 'LesProduits/login.html'
+    def post(self, request, **kwargs):
+        username = request.POST.get('username', False)
+        password = request.POST.get('password', False)
+        user = authenticate(username=username, password=password)
+        if user is not None and user.is_active:
+            login(request, user)
+            return render(request, 'LesProduits/home.html',{'titreh1':username})
+        else:
+            return render(request, 'LesProduits/register.html')
+
+class RegisterView(TemplateView):
+    template_name = 'LesProduits/register.html'
+    def post(self, request, **kwargs):
+        username = request.POST.get('username', False)
+        mail = request.POST.get('mail', False)
+        password = request.POST.get('password', False)
+        user = User.objects.create_user(username, mail, password)
+        user.save()
+        if user is not None and user.is_active:
+            return render(request, 'LesProduits/login.html')
+        else:
+            return render(request, 'LesProduits/register.html')
+
+class DisconnectView(TemplateView):
+    template_name = 'LesProduits/logout.html'
+    def get(self, request, **kwargs):
+        logout(request)
+        return render(request, self.template_name)
