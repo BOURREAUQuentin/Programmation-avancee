@@ -6,7 +6,7 @@ from django.contrib.auth import *
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
 
-from LesProduits.forms import ContactUsForm
+from LesProduits.forms import ContactUsForm, ProductForm
 from django.core.mail import send_mail
 from django.shortcuts import redirect
 
@@ -90,8 +90,19 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(ProductDetailView, self).get_context_data(**kwargs)
         context['titremenu'] = "Détail produit"
-        context['product'] = Product.objects.all().filter(code=1234)
         return context
+
+##################### Product (formulaire) #####################
+
+def ProductCreate(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            product = form.save()
+            return redirect('product-detail', product.id)
+    else:
+        form = ProductForm()
+    return render(request, "LesProduits/new_product.html", {'form': form})
 
 ##################### Contact us (formulaire) #####################
 

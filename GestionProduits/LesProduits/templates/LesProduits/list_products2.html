@@ -17,7 +17,7 @@
     <tbody>
         {% for prdct in prdcts %}
             <tr>
-            <td>{{ prdct.name }} </td>
+            <td><a href="{% url 'product-detail' prdct.id %}">{{ prdct.name }}</a></td>
             <td>{{ prdct.code }} </td>
             <td>{{ prdct.price_ht }} </td>
             <td>{{ prdct.price_ttc }} </td>
@@ -37,4 +37,5 @@
         {% endif %}
         produits préférés.
     </p>
+    <a href="{% url 'product-add' %}">Ajouter un nouveau produit</a>
 {% endblock %}
