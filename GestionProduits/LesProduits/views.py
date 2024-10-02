@@ -1,6 +1,7 @@
 from django.forms import BaseModelForm
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.urls import reverse_lazy
 from LesProduits.models import Product, ProductItem
 
 from django.contrib.auth import *
@@ -86,7 +87,7 @@ class ProductListView(ListView):
 
 class ProductDetailView(DetailView):
     model = Product
-    template_name = "LesProduits/detail_product2.html"
+    template_name = "LesProduits/detail_product.html"
     context_object_name = "product"
     def get_context_data(self, **kwargs):
         context = super(ProductDetailView, self).get_context_data(**kwargs)
@@ -122,6 +123,11 @@ class ProductUpdateView(UpdateView):
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         product = form.save()
         return redirect('product-detail', product.id)
+
+class ProductDeleteView(DeleteView):
+    model = Product
+    template_name = "LesProduits/delete_product.html"
+    success_url = reverse_lazy('product-list')
 
 ##################### Contact us (formulaire) #####################
 
