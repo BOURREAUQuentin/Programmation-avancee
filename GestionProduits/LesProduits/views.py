@@ -1,5 +1,7 @@
+from django.forms import BaseModelForm
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.urls import reverse_lazy
 from LesProduits.models import Product, ProductItem
 
 from django.contrib.auth import *
@@ -85,7 +87,7 @@ class ProductListView(ListView):
 
 class ProductDetailView(DetailView):
     model = Product
-    template_name = "LesProduits/detail_product2.html"
+    template_name = "LesProduits/detail_product.html"
     context_object_name = "product"
     def get_context_data(self, **kwargs):
         context = super(ProductDetailView, self).get_context_data(**kwargs)
@@ -94,15 +96,38 @@ class ProductDetailView(DetailView):
 
 ##################### Product (formulaire) #####################
 
-def ProductCreate(request):
-    if request.method == 'POST':
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            product = form.save()
-            return redirect('product-detail', product.id)
-    else:
-        form = ProductForm()
-    return render(request, "LesProduits/new_product.html", {'form': form})
+# def ProductCreate(request):
+#     if request.method == 'POST':
+#         form = ProductForm(request.POST)
+#         if form.is_valid():
+#             product = form.save()
+#             return redirect('product-detail', product.id)
+#     else:
+#         form = ProductForm()
+#     return render(request, "LesProduits/new_product.html", {'form': form})
+
+class ProductCreateView(CreateView):
+    model = Product
+    form_class=ProductForm
+    template_name = "LesProduits/new_product.html"
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        product = form.save()
+        return redirect('product-detail', product.id)
+    
+class ProductUpdateView(UpdateView):
+    model = Product
+    form_class=ProductForm
+    template_name = "LesProduits/update_product.html"
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        product = form.save()
+        return redirect('product-detail', product.id)
+
+class ProductDeleteView(DeleteView):
+    model = Product
+    template_name = "LesProduits/delete_product.html"
+    success_url = reverse_lazy('product-list')
 
 ##################### Contact us (formulaire) #####################
 
