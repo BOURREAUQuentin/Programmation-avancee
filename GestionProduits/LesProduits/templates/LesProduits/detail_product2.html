@@ -13,4 +13,5 @@
         <li>Prix TTC: {{ product.price_ttc }}</li>
         <li>Date de création : {{ product.date_creation }}</li>
     </ul>
+    <a href="{% url 'product-update' product.id %}">Modifier le produit</a>
 {% endblock %}

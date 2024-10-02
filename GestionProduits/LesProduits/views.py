@@ -1,3 +1,4 @@
+from django.forms import BaseModelForm
 from django.shortcuts import render
 from django.http import HttpResponse
 from LesProduits.models import Product, ProductItem
@@ -94,15 +95,33 @@ class ProductDetailView(DetailView):
 
 ##################### Product (formulaire) #####################
 
-def ProductCreate(request):
-    if request.method == 'POST':
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            product = form.save()
-            return redirect('product-detail', product.id)
-    else:
-        form = ProductForm()
-    return render(request, "LesProduits/new_product.html", {'form': form})
+# def ProductCreate(request):
+#     if request.method == 'POST':
+#         form = ProductForm(request.POST)
+#         if form.is_valid():
+#             product = form.save()
+#             return redirect('product-detail', product.id)
+#     else:
+#         form = ProductForm()
+#     return render(request, "LesProduits/new_product.html", {'form': form})
+
+class ProductCreateView(CreateView):
+    model = Product
+    form_class=ProductForm
+    template_name = "LesProduits/new_product.html"
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        product = form.save()
+        return redirect('product-detail', product.id)
+    
+class ProductUpdateView(UpdateView):
+    model = Product
+    form_class=ProductForm
+    template_name = "LesProduits/update_product.html"
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        product = form.save()
+        return redirect('product-detail', product.id)
 
 ##################### Contact us (formulaire) #####################
 
