@@ -33,4 +33,10 @@ urlpatterns = [
     path("attribute/<pk>", views.ProductAttributeDetailView.as_view(), name="attribute-detail"),
     path("attribute/<pk>/update/",views.ProductAttributeUpdateView.as_view(), name="attribute-update"),
     path("attribute/<pk>/delete/",views.ProductAttributeDeleteView.as_view(), name="attribute-delete"),
+
+    ##################### PRODUIT ITEMS #########################
+    path("item/list",views.ProductItemListView.as_view(), name="item-list"),
+    path("item/<pk>", views.ProductItemDetailView.as_view(), name="item-detail"),
+    path("item/<pk>/update/",views.ProductItemUpdateView.as_view(), name="item-update"),
+    path("item/<pk>/delete/",views.ProductItemDeleteView.as_view(), name="item-delete"),
 ]

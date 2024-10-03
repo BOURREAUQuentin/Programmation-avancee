@@ -116,6 +116,31 @@ class ProductAttributeDetailView(DetailView):
         context['values']=ProductAttributeValue.objects.filter(product_attribute=self.object).order_by('position')
         return context
 
+class ProductItemListView(ListView):
+    model = ProductItem
+    template_name = "LesProduits/list_items.html"
+    context_object_name = "productitems"
+
+    def get_queryset(self ):
+        return ProductItem.objects.all()
+    
+    def get_context_data(self, **kwargs):
+        context = super(ProductItemListView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Liste des déclinaisons"
+        return context
+
+class ProductItemDetailView(DetailView):
+    model = ProductItem
+    template_name = "LesProduits/detail_item.html"
+    context_object_name = "productitem"
+
+    def get_context_data(self, **kwargs):
+        context = super(ProductItemDetailView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Détail déclinaison"
+        # Récupérer les attributs associés à cette déclinaison
+        context['attributes'] = self.object.attributes.all()
+        return context
+
 ##################### Attribute (formulaire) #####################
 
 class ProductAttributeUpdateView(UpdateView):
@@ -131,6 +156,22 @@ class ProductAttributeDeleteView(DeleteView):
     model = ProductAttribute
     template_name = "LesProduits/delete_attribute.html"
     success_url = reverse_lazy('attribute-list')
+
+##################### Items (formulaire) #####################
+
+class ProductItemUpdateView(UpdateView):
+    model = ProductItem
+    form_class = ProductItemForm
+    template_name = "LesProduits/update_item.html"
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        item = form.save()
+        return redirect('item-detail', item.id)
+
+class ProductItemDeleteView(DeleteView):
+    model = ProductItem
+    template_name = "LesProduits/delete_item.html"
+    success_url = reverse_lazy('item-list')
 
 ##################### Product (formulaire) #####################
 

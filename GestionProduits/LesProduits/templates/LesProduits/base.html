@@ -21,6 +21,9 @@
                             <a class="nav-link" href="{% url 'product-list' %}">Produits</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'item-list' %}">Déclinaisons</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{% url 'attribute-list' %}">Attributs</a>
                         </li>
                         {% if user.is_authenticated %}
