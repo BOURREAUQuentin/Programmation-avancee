@@ -42,7 +42,7 @@ class Product(models.Model):
 class ProductItem(models.Model):
     
     class Meta:
-        verbose_name = "DÃ©clinaison Produit"
+        verbose_name = "Déclinaison Produit"
 
     color   = models.CharField(max_length=100)
     code    = models.CharField(max_length=10, null=True, blank=True, unique=True)

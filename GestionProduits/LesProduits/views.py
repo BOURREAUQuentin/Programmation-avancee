@@ -2,15 +2,20 @@ from django.forms import BaseModelForm
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-from LesProduits.models import Product, ProductItem
+from LesProduits.models import *
 
 from django.contrib.auth import *
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
 
-from LesProduits.forms import ContactUsForm, ProductForm
+from LesProduits.forms import *
 from django.core.mail import send_mail
 from django.shortcuts import redirect
+
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView
+from django.shortcuts import render
 
 # def home(request):
 #     return HttpResponse("Bienvenue sur l'accueil")
@@ -26,6 +31,7 @@ from django.shortcuts import redirect
 #     reponse += "</ul>"
 #     return HttpResponse(reponse)
 
+@login_required(login_url='/LesProduits/login/')
 def home(request):
     return render(request, 'LesProduits/home.html')
 
@@ -46,21 +52,19 @@ def listeDeclinaisons(request):
     declinaisons = ProductItem.objects.all()
     return render(request, 'LesProduits/list_items.html', {'liste_declinaisons': declinaisons})
 
-def detailProduit(request,id_produit):
-    # gérer cas d'erreur
-    produitRecherche = Product.objects.all().filter(code=id_produit)
-    print(produitRecherche)
-    return render(request, 'LesProduits/detail_product.html', {'produit': produitRecherche})
-
-# faire vue pour id d'un produit et si ca existe pas on renvoi erreur 404
+# def detailProduit(request,id_produit):
+#     # gérer cas d'erreur
+#     produitRecherche = Product.objects.all().filter(code=id_produit)
+#     print(produitRecherche)
+#     return render(request, 'LesProduits/detail_product.html', {'produit': produitRecherche})
 
 
 from django.views.generic import *
 
-class HomeView(TemplateView):
-    template_name = "LesProduits/home3.html"
-    def post(self, request, **kwargs):
-        return render(request, self.template_name)
+# class HomeView(TemplateView):
+#     template_name = "LesProduits/home3.html"
+#     def post(self, request, **kwargs):
+#         return render(request, self.template_name)
 
 class AboutView(TemplateView):
     template_name = "LesProduits/about.html"
@@ -71,19 +75,27 @@ class AboutView(TemplateView):
     def post(self, request, **kwargs):
         return render(request, self.template_name)
 
+@method_decorator(login_required(login_url='/LesProduits/login/'), name='dispatch')
 class ProductListView(ListView):
     model = Product
-    template_name = "LesProduits/list_products2.html"
-    context_object_name = "products"
+    template_name = "LesProduits/list_products.html"
+    context_object_name = "prdcts"
 
     def get_context_data(self, **kwargs):
         context = super(ProductListView, self).get_context_data(**kwargs)
         context['titremenu'] = "Liste des produits"
-        context['prdcts'] = Product.objects.all()
         return context
 
-    def get_queryset(self ) :
-        return Product.objects.order_by("price_ttc")
+    def get_queryset(self):
+        # Surcouche pour filtrer les résultats en fonction de la recherche
+        # Récupérer le terme de recherche depuis la requête GET
+        query = self.request.GET.get('search')
+        print(query)
+        if query:
+            # Filtre les produits par nom (insensible à la casse)
+            return Product.objects.filter(name__icontains=query)
+        # Si aucun terme de recherche, retourner tous les produits
+        return Product.objects.all()
 
 class ProductDetailView(DetailView):
     model = Product
@@ -93,6 +105,87 @@ class ProductDetailView(DetailView):
         context = super(ProductDetailView, self).get_context_data(**kwargs)
         context['titremenu'] = "Détail produit"
         return context
+
+class ProductAttributeListView(ListView):
+    model = ProductAttribute
+    template_name = "LesProduits/list_attributes.html"
+    context_object_name = "productattributes"
+
+    def get_queryset(self ):
+        return ProductAttribute.objects.all().prefetch_related('productattributevalue_set')
+    
+    def get_context_data(self, **kwargs):
+        context = super(ProductAttributeListView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Liste des attributs"
+        return context
+    
+class ProductAttributeDetailView(DetailView):
+    model = ProductAttribute
+    template_name = "LesProduits/detail_attribute.html"
+    context_object_name = "productattribute"
+
+    def get_context_data(self, **kwargs):
+        context = super(ProductAttributeDetailView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Détail attribut"
+        context['values']=ProductAttributeValue.objects.filter(product_attribute=self.object).order_by('position')
+        return context
+
+class ProductItemListView(ListView):
+    model = ProductItem
+    template_name = "LesProduits/list_items.html"
+    context_object_name = "productitems"
+
+    def get_queryset(self ):
+        return ProductItem.objects.select_related('product').prefetch_related('attributes')
+    
+    def get_context_data(self, **kwargs):
+        context = super(ProductItemListView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Liste des déclinaisons"
+        return context
+
+class ProductItemDetailView(DetailView):
+    model = ProductItem
+    template_name = "LesProduits/detail_item.html"
+    context_object_name = "productitem"
+
+    def get_context_data(self, **kwargs):
+        context = super(ProductItemDetailView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Détail déclinaison"
+        # Récupérer les attributs associés à cette déclinaison
+        context['attributes'] = self.object.attributes.all()
+        return context
+
+##################### Attribute (formulaire) #####################
+
+class ProductAttributeUpdateView(UpdateView):
+    model = ProductAttribute
+    form_class = ProductAttributeForm
+    template_name = "LesProduits/update_attribute.html"
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        attribute = form.save()
+        return redirect('attribute-detail', attribute.id)
+
+class ProductAttributeDeleteView(DeleteView):
+    model = ProductAttribute
+    template_name = "LesProduits/delete_attribute.html"
+    success_url = reverse_lazy('attribute-list')
+
+##################### Items (formulaire) #####################
+
+class ProductItemUpdateView(UpdateView):
+    model = ProductItem
+    form_class = ProductItemForm
+    template_name = "LesProduits/update_item.html"
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        item = form.save()
+        return redirect('item-detail', item.id)
+
+class ProductItemDeleteView(DeleteView):
+    model = ProductItem
+    template_name = "LesProduits/delete_item.html"
+    success_url = reverse_lazy('item-list')
 
 ##################### Product (formulaire) #####################
 
@@ -162,7 +255,7 @@ class ConnectView(LoginView):
             login(request, user)
             return render(request, 'LesProduits/home.html',{'titreh1':username})
         else:
-            return render(request, 'LesProduits/register.html')
+            return render(request, 'LesProduits/login.html', {'erreurConnexion' : "Username ou password incorrect."})
 
 class RegisterView(TemplateView):
     template_name = 'LesProduits/register.html'
