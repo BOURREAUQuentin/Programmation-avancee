@@ -17,6 +17,11 @@ class ProductAttributeForm(forms.ModelForm):
         model = ProductAttribute
         fields = '__all__'
 
+class ProductAttributeValueForm(forms.ModelForm):
+    class Meta:
+        model = ProductAttributeValue
+        fields = '__all__'
+
 class ProductItemForm(forms.ModelForm):
     class Meta:
         model = ProductItem

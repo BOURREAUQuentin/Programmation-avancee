@@ -12,6 +12,11 @@ from LesProduits.forms import *
 from django.core.mail import send_mail
 from django.shortcuts import redirect
 
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView
+from django.shortcuts import render
+
 # def home(request):
 #     return HttpResponse("Bienvenue sur l'accueil")
 
@@ -26,6 +31,7 @@ from django.shortcuts import redirect
 #     reponse += "</ul>"
 #     return HttpResponse(reponse)
 
+@login_required(login_url='/LesProduits/login/')
 def home(request):
     return render(request, 'LesProduits/home.html')
 
@@ -69,19 +75,27 @@ class AboutView(TemplateView):
     def post(self, request, **kwargs):
         return render(request, self.template_name)
 
+@method_decorator(login_required(login_url='/LesProduits/login/'), name='dispatch')
 class ProductListView(ListView):
     model = Product
     template_name = "LesProduits/list_products.html"
-    context_object_name = "products"
+    context_object_name = "prdcts"
 
     def get_context_data(self, **kwargs):
         context = super(ProductListView, self).get_context_data(**kwargs)
         context['titremenu'] = "Liste des produits"
-        context['prdcts'] = Product.objects.all()
         return context
 
-    def get_queryset(self ) :
-        return Product.objects.order_by("price_ttc")
+    def get_queryset(self):
+        # Surcouche pour filtrer les résultats en fonction de la recherche
+        # Récupérer le terme de recherche depuis la requête GET
+        query = self.request.GET.get('search')
+        print(query)
+        if query:
+            # Filtre les produits par nom (insensible à la casse)
+            return Product.objects.filter(name__icontains=query)
+        # Si aucun terme de recherche, retourner tous les produits
+        return Product.objects.all()
 
 class ProductDetailView(DetailView):
     model = Product
@@ -98,7 +112,7 @@ class ProductAttributeListView(ListView):
     context_object_name = "productattributes"
 
     def get_queryset(self ):
-        return ProductAttribute.objects.all()
+        return ProductAttribute.objects.all().prefetch_related('productattributevalue_set')
     
     def get_context_data(self, **kwargs):
         context = super(ProductAttributeListView, self).get_context_data(**kwargs)
@@ -122,7 +136,7 @@ class ProductItemListView(ListView):
     context_object_name = "productitems"
 
     def get_queryset(self ):
-        return ProductItem.objects.all()
+        return ProductItem.objects.select_related('product').prefetch_related('attributes')
     
     def get_context_data(self, **kwargs):
         context = super(ProductItemListView, self).get_context_data(**kwargs)
@@ -241,7 +255,7 @@ class ConnectView(LoginView):
             login(request, user)
             return render(request, 'LesProduits/home.html',{'titreh1':username})
         else:
-            return render(request, 'LesProduits/register.html')
+            return render(request, 'LesProduits/login.html', {'erreurConnexion' : "Username ou password incorrect."})
 
 class RegisterView(TemplateView):
     template_name = 'LesProduits/register.html'
